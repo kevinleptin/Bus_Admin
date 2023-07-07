@@ -1,0 +1,97 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white border-0 py-3">
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <h4 class="m-0">
+                Feedback ({{ feedbacks.length || 0 }})
+              </h4>
+            </div>
+            <!-- <div class="col-12 col-sm-6">
+              <button type="button" class="btn btn-sm btn-primary float-end" (click)="openConfirmationModal(userModal)">
+                Give Feedback
+              </button>
+            </div> -->
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <app-no-data-found *ngIf="feedbacks.length === 0" title="No Feedback Found"></app-no-data-found>
+          <div class="table-responsive" *ngIf="feedbacks.length !== 0">
+            <table class="table table-flush m-0">
+              <thead class="bg-light">
+                <tr>
+                  <th scope="col">Sr. No</th>
+                  <th scope="col">Query</th>
+                  <th scope="col">Remarks</th>
+                  <th scope="col">Created On</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of feedbacks; index as idx">
+                  <td>{{ idx + 1 }}.</td>
+                  <td class="text-wrap">{{ user.query}}</td>
+                  <td class="text-wrap">{{ user?.remarks || "-"}}</td>
+                  <td>{{ user.createdOn | date:'medium' }}</td>
+                  <td>
+                    <div class="h5 m-0" [ngSwitch]="user.isComplaint">
+                      <span class="badge rounded-pill bg-success" *ngSwitchCase="0">Suggestion</span>
+                      <span class="badge rounded-pill bg-danger" *ngSwitchCase="1">Complaint</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-primary" (click)="openConfirmationModal(userModal, user)">Update</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #userModal let-modal>
+  <div class="modal-header">
+    <span class="modal-title font-weight-bold">Feedback</span>
+    <button type="button" class="btn" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <!-- <i class="bi bi-x"></i> -->
+      &times;
+    </button>
+  </div>
+  <form [formGroup]="feedbackFormGroup" (ngSubmit)="saveFeedback()">
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="query" class="form-label text-muted m-0 mb-1">Query</label>
+            <textarea type="text" class="form-control" id="query" name="query" formControlName="query" rows="5" readonly></textarea>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="remarks" class="form-label text-muted m-0 mb-1">Remarks</label>
+            <textarea type="text" class="form-control" id="remarks" name="remarks" formControlName="remarks" rows="5"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="isLoading">
+        Save
+        <span *ngIf="isLoading">&nbsp;</span>
+        <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+</ng-template>

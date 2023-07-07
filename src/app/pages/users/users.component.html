@@ -1,0 +1,157 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white border-0 py-3">
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <h4 class="m-0">
+                {{ isDriverUrl ? 'Drivers' : 'Users' }} ({{ users.length || 0 }})
+              </h4>
+            </div>
+            <div class="col-12 col-sm-6">
+              <button type="button" class="btn btn-sm btn-primary float-end" (click)="openUserModal(userModal)">
+                Add {{ isDriverUrl ? 'Driver' : 'User' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <app-no-data-found *ngIf="users.length === 0"
+            title="No {{ isDriverUrl ? 'Drivers' : 'Users' }} Found"></app-no-data-found>
+          <div class="table-responsive" *ngIf="users.length !== 0">
+            <table class="table table-flush m-0">
+              <thead class="bg-light">
+                <tr>
+                  <th scope="col">Sr. No</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Department</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Created On</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users; index as idx">
+                  <td>{{ idx + 1 }}.</td>
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.department || "-" }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.createdOn | date:'MMM dd, yyyy hh:mm a' }}</td>
+                  <td>
+                    <div class="h5 m-0" [ngSwitch]="user.isActive">
+                      <span class="badge rounded-pill bg-success" *ngSwitchCase="1">Active</span>
+                      <span class="badge rounded-pill bg-warning" *ngSwitchCase="2">Blocked</span>
+                      <span class="badge rounded-pill bg-danger" *ngSwitchCase="0">Inactive</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-outline-primary btn-sm mx-1" (click)="openUserModal(userModal, user)">Update</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm mx-1">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #userModal let-modal>
+  <div class="modal-header">
+    <span class="modal-title font-weight-bold">User Details</span>
+    <button type="button" class="btn" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <!-- <i class="bi bi-x"></i> -->
+      &times;
+    </button>
+  </div>
+  <form [formGroup]="userFormGroup" (ngSubmit)="saveUser()">
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="name" class="form-label text-muted m-0 mb-1">Name</label>
+            <input type="text" class="form-control" id="name" name="name" formControlName="name" placeholder="Full Name"
+              required>
+            <div
+              *ngIf="userFormGroup.get('name')?.invalid && (userFormGroup.get('name')?.dirty || userFormGroup.get('name')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="userFormGroup.get('name')?.hasError('required')">Name is required.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="department" class="form-label text-muted m-0 mb-1">Department</label>
+            <input type="text" class="form-control" id="department" name="department" formControlName="department"
+              placeholder="9999999999">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="email" class="form-label text-muted m-0 mb-1">Email</label>
+            <input type="email" class="form-control" id="email" name="email" formControlName="email"
+              placeholder="abc@example.com" [readonly]="isUpdate">
+            <div
+              *ngIf="userFormGroup.get('email')?.invalid && (userFormGroup.get('email')?.dirty || userFormGroup.get('email')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="userFormGroup.get('email')?.hasError('required')">Email is required.</div>
+              <div *ngIf="userFormGroup.get('email')?.hasError('email')"> Badly Formatted</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="password" class="form-label text-muted m-0 mb-1">Password</label>
+            <input [type]="isUpdate ? 'password' : 'text'" class="form-control" id="password" name="password"
+              formControlName="password" placeholder="Password" [readonly]="isUpdate">
+            <div
+              *ngIf="userFormGroup.get('password')?.invalid && (userFormGroup.get('password')?.dirty || userFormGroup.get('password')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="userFormGroup.get('password')?.hasError('required')">Password is required.</div>
+              <div *ngIf="userFormGroup.get('password')?.hasError('minLength')">Password should contains atleast 6 charactrs</div>
+              <!-- <div *ngIf="userFormGroup.get('password')?.hasError('maxLength')">Password not more than 12 charactrs</div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="form-group d-flex flex-column">
+            <label for="isActive" class="m-0 text-muted mb-1">User Status</label>
+            <div class="btn-group" ngbRadioGroup id="isActive" name="isActive"
+              formControlName="isActive">
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]='1' class="btn-check"> Active
+              </label>
+              <label ngbButtonLabel class="btn-primary btn-sm ">
+                <input ngbButton type="radio" [value]='2' class="btn-check"> Block User
+              </label>
+              <label ngbButtonLabel class="btn-primary btn-sm ">
+                <input ngbButton type="radio" [value]='0' class="btn-check"> Inactive
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="isLoading">
+        Save
+        <span *ngIf="isLoading">&nbsp;</span>
+        <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+</ng-template>

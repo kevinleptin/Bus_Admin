@@ -1,0 +1,145 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white border-0 py-3">
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <h4 class="m-0">
+                Bus Pass Requests ({{ busPassesList.length || 0 }})
+              </h4>
+            </div>
+            
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <app-no-data-found *ngIf="busPassesList.length === 0" title="No Bus Pass Request Found"></app-no-data-found>
+          <div class="table-responsive" *ngIf="busPassesList.length !== 0">
+            <table class="table table-flush m-0">
+              <thead class="bg-light">
+                <tr>
+                  <th scope="col">Sr. No</th>
+                  <th scope="col">User Name</th>
+                  <th scope="col">Route Name</th>
+                  <th scope="col">Bus Registeration Number</th>
+                  <th scope="col">Requested On</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let route of busPassesList; index as idx">
+                  <td>{{ idx + 1 }}.</td>
+                  <td class="text-wrap">{{ route.userName }}</td>
+                  <td class="text-wrap">{{ route?.routeName || "-" }}</td>
+                  <td>{{ route?.busRegNumber || 0 }}</td>
+                  <td>{{ route.requestedOn | date:'MMM dd, yyyy hh:mm a' }}</td>
+                  <td>
+                    <div class="h5 m-0" [ngSwitch]="route.status">
+                      <span class="badge rounded-pill bg-primary" *ngSwitchCase="1">Requested</span>
+                      <span class="badge rounded-pill bg-success" *ngSwitchCase="2">Approved</span>
+                      <span class="badge rounded-pill bg-danger" *ngSwitchCase="4">Cancelled By User</span>
+                      <span class="badge rounded-pill bg-danger" *ngSwitchCase="3">Cancelled</span>
+                      <span class="badge rounded-pill bg-warning" *ngSwitchCase="5">Suspended</span>
+                      <span class="badge rounded-pill bg-secondary" *ngSwitchCase="-1">Requested For Cancellation</span>
+                      <span class="badge rounded-pill bg-secondary" *ngSwitchCase="-2">Requested For Suspension</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-primary btn-sm" *ngIf="route.status <= 1" (click)="openModal(userModal, route)">Update</button>
+                    <!-- <button type="button" class="btn btn-outline-primary btn-sm mx-1" (click)="openUserModal(userModal, route)">Update</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm mx-1" (click)="deleteRoute(route.routeId)">Delete</button> -->
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #userModal let-modal>
+  <div class="modal-header">
+    <span class="modal-title font-weight-bold">Bus Pass Request Details</span>
+    <button type="button" class="btn" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <!-- <i class="bi bi-x"></i> -->
+      &times;
+    </button>
+  </div>
+  <form [formGroup]="busPassReqFormGroup" (ngSubmit)="updateStatus()">
+    <div class="modal-body">
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label for="" class="text-sm text-muted">Current Bus Pass Status</label>
+            <div [ngSwitch]="currentStatus" class="h5">
+              <span *ngSwitchCase="1">Requested</span>
+              <span *ngSwitchCase="2">Approved</span>
+              <span *ngSwitchCase="3">Cancelled</span>
+              <span *ngSwitchCase="5">Suspended</span>
+              <span *ngSwitchCase="-1">Requested For Cancellation</span>
+              <span *ngSwitchCase="-2">Requested For Suspension</span>
+              <span *ngSwitchCase="-3">Requested For Route Change</span>
+            </div>
+          </div>
+          <div *ngIf="!showButtons">
+            <div class="d-flex flex-column">
+              <span class="text-sm text-muted">Valid Till</span>
+              <span class="h6">{{ busPassReqFormGroup.get('validTill')?.value | date: 'MMMM dd, yyyy, hh:mm a' }}</span>
+            </div>
+            <h6 class="text-danger m-0 mt-3">Confirmation</h6>
+            <p>Are you sure for this operation?</p>
+          </div>
+
+          <div class="form-group d-flex flex-column" *ngIf="showButtons">
+            <label for="status" class="m-0 text-muted mb-1">Status</label>
+            <div class="btn-group" ngbRadioGroup id="status" name="status"
+              formControlName="status">
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]='1' class="btn-check">Requested
+              </label>
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]='2' class="btn-check">Approve
+              </label>
+              <label ngbButtonLabel class="btn-primary btn-sm ">
+                <input ngbButton type="radio" [value]='3' class="btn-check">Reject
+              </label>
+              <!-- <label ngbButtonLabel class="btn-primary btn-sm ">
+                <input ngbButton type="radio" [value]='5' class="btn-check">Suspend
+              </label> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="isLoading">
+        Update
+        <span *ngIf="isLoading">&nbsp;</span>
+        <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #deleteModal let-modal>
+  <div class="modal-header border-0">
+    <span class="modal-title font-weight-bold">Are you sure for this operation?</span>
+    <button type="button" class="btn" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+  <div class="modal-footer border-0">
+    <button class="btn btn-sm btn-light" (click)="modal.dismiss()">No</button>
+      <button class="btn btn-sm btn-success" (click)="updateStatus()">Yes</button>
+  </div>
+</ng-template>

@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+// $primary: #ffbf00;
+
+/* Importing Bootstrap SCSS file. */
+@import '~bootstrap/scss/bootstrap';
+@import '~bootstrap-icons/font/bootstrap-icons.css';
+@import 'ngx-toastr/toastr';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  height: 100vh;
+}
+
+#bg {
+  background: linear-gradient(
+    to bottom right,
+    #ffbf00,
+    #ffcc0079
+  ); /* Standard syntax (must be last) */
+}
+
+input:read-only, textarea:read-only {
+  background: #eee;
+}

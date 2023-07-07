@@ -1,0 +1,213 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white border-0 py-3">
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <h4 class="m-0">
+                Vehicles ({{ vehiclesList.length || 0 }})
+              </h4>
+            </div>
+            <div class="col-12 col-sm-6">
+              <button type="button" class="btn btn-sm btn-primary float-end" (click)="openVehicleModal(userModal)">
+                Add Vehicle
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <app-no-data-found *ngIf="vehiclesList.length === 0" title="No Vehicles Found"></app-no-data-found>
+          <div class="table-responsive" *ngIf="vehiclesList.length !== 0">
+            <table class="table table-flush m-0">
+              <thead class="bg-light">
+                <tr>
+                  <th scope="col">Sr. No</th>
+                  <th scope="col">Registration Number / Type</th>
+                  <th scope="col">Filled Seats - Total Seats</th>
+                  <th scope="col">Driver</th>
+                  <th scope="col">Route</th>
+                  <th scope="col">Created On</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of vehiclesList; index as idx">
+                  <td>{{ idx + 1 }}.</td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <span class="h5 m-0 mb-1">{{ user.registrationNumber }}</span>
+                      <span class="text-sm text-muted">{{ vehicleTypes[user.type || 0] }}</span>
+                    </div>
+                  </td>
+                  <td>{{ user.filledSeats || 0 }} - {{ user.totalSeats || 0 }}</td>
+                  <td>{{ getObject('driverId', user.driverId)?.name || "-" }}</td>
+                  <td>{{ getObject('busRouteId', user.busRouteId)?.title || "-" }}</td>
+                  <td>{{ user.createdOn | date:'medium' }}</td>
+                  <td>
+                    <div class="h5 m-0" [ngSwitch]="user.isActiveOnRoad">
+                      <span class="badge rounded-pill bg-success" *ngSwitchCase="1">Active</span>
+                      <span class="badge rounded-pill bg-danger" *ngSwitchCase="0">Inactive</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-outline-primary btn-sm mx-1"
+                      (click)="openVehicleModal(userModal, user)">Update</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm mx-1">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #userModal let-modal>
+  <div class="modal-header">
+    <span class="modal-title font-weight-bold">Vehicle Details</span>
+    <button type="button" class="btn" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <!-- <i class="bi bi-x"></i> -->
+      &times;
+    </button>
+  </div>
+  <form [formGroup]="vehicleFormGroup" (ngSubmit)="saveVehicleInDb()">
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="registrationNumber" class="form-label text-muted m-0 mb-1">Registration Number</label>
+            <input type="text" class="form-control" id="registrationNumber" name="registrationNumber"
+              formControlName="registrationNumber" required>
+            <div
+              *ngIf="vehicleFormGroup.get('registrationNumber')?.invalid && (vehicleFormGroup.get('registrationNumber')?.dirty || vehicleFormGroup.get('registrationNumber')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('registrationNumber')?.hasError('required')">Registration Number is
+                required.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="totalSeats" class="form-label text-muted m-0 mb-1">Total Seats</label>
+            <input type="number" class="form-control" id="totalSeats" name="totalSeats" formControlName="totalSeats"
+              required>
+            <div
+              *ngIf="vehicleFormGroup.get('totalSeats')?.invalid && (vehicleFormGroup.get('totalSeats')?.dirty || vehicleFormGroup.get('totalSeats')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('totalSeats')?.hasError('required')">Total Seats is required.</div>
+              <div *ngIf="vehicleFormGroup.get('totalSeats')?.hasError('min')">Total Seats should be greater than 0</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="pricePerSeat" class="form-label text-muted m-0 mb-1">Price Per Seat</label>
+            <input type="number" class="form-control" id="pricePerSeat" name="pricePerSeat" formControlName="pricePerSeat"
+              required>
+            <div
+              *ngIf="vehicleFormGroup.get('pricePerSeat')?.invalid && (vehicleFormGroup.get('pricePerSeat')?.dirty || vehicleFormGroup.get('pricePerSeat')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('pricePerSeat')?.hasError('required')">Price Per Seat is required.</div>
+              <div *ngIf="vehicleFormGroup.get('pricePerSeat')?.hasError('min')">Price Per Seat should be greater than 0</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="tripStartTime" class="form-label text-muted m-0 mb-1">Trip Start Time</label>
+            <input type="text" class="form-control" id="tripStartTime" name="tripStartTime"
+              formControlName="tripStartTime">
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="tripEndTime" class="form-label text-muted m-0 mb-1">Trip End Time</label>
+            <input type="text" class="form-control" id="tripEndTime" name="tripEndTime" formControlName="tripEndTime">
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="type" class="form-label text-muted m-0 mb-1">Select Bus Type</label>
+            <select class="form-select" name="type" id="type" formControlName="type">
+              <option [value]="null">Choose Type</option>
+              <option *ngFor="let type of vehicleTypes; index as idx" [value]="idx">
+                {{ type }}
+              </option>
+            </select>
+            <div
+              *ngIf="vehicleFormGroup.get('type')?.invalid && (vehicleFormGroup.get('type')?.dirty || vehicleFormGroup.get('type')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('type')?.hasError('required')">Vehicle Type is required.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="driverId" class="form-label text-muted m-0 mb-1">Select Driver</label>
+            <select class="form-select" name="driverId" id="driverId" formControlName="driverId">
+              <option [value]="null">Choose Driver</option>
+              <option *ngFor="let driver of driverList;" [value]="driver.userId">
+                {{ driver.name }}
+              </option>
+            </select>
+            <div
+              *ngIf="vehicleFormGroup.get('driverId')?.invalid && (vehicleFormGroup.get('driverId')?.dirty || vehicleFormGroup.get('driverId')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('driverId')?.hasError('required')">Driver Selection is mandatory</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-2">
+            <label for="busRouteId" class="form-label text-muted m-0 mb-1">Select Route</label>
+            <select class="form-select" name="busRouteId" id="busRouteId" formControlName="busRouteId">
+              <option [value]="null">Choose Route</option>
+              <option *ngFor="let route of routesList;" [value]="route.routeId">
+                {{ route.title }} - Stops {{ route.totalStops }}
+              </option>
+            </select>
+            <div
+              *ngIf="vehicleFormGroup.get('busRouteId')?.invalid && (vehicleFormGroup.get('busRouteId')?.dirty || vehicleFormGroup.get('busRouteId')?.touched)"
+              class="text-sm text-danger">
+              <div *ngIf="vehicleFormGroup.get('busRouteId')?.hasError('required')">Route Selection is mandatory.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="form-group d-flex flex-column align-items-start">
+            <label for="isActiveOnRoad" class="m-0 text-muted mb-1">Vehicle Status on Road</label>
+            <div class="btn-group" ngbRadioGroup id="isActiveOnRoad" name="isActiveOnRoad"
+              formControlName="isActiveOnRoad">
+              <label ngbButtonLabel class="btn-primary btn-sm">
+                <input ngbButton type="radio" [value]='1' class="btn-check"> Active
+              </label>
+              <label ngbButtonLabel class="btn-primary btn-sm ">
+                <input ngbButton type="radio" [value]='0' class="btn-check"> Inactive
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="isLoading">
+        Save
+        <span *ngIf="isLoading">&nbsp;</span>
+        <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+</ng-template>
